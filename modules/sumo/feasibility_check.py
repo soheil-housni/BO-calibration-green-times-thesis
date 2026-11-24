@@ -1,4 +1,4 @@
-from .green_time_functions import map_to_all_green_times
+from .old_green_time_functions import map_to_all_green_times
 import numpy as np
 
 def check_feasibility(g_vec):

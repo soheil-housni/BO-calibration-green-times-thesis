@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from .green_time_functions import update_green_times
+from .old_green_time_functions import update_green_times
 import shutil
 from .vehroute_df_preprocessing import create_vehroute_df
 from .extract_route_connexion_traveltime import get_route_connexion_average_traveltime

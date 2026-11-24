@@ -1,12 +1,3 @@
-import pandas as pd
-import os
-import numpy as np
-from .green_time_functions import update_green_times
-import xml.etree.ElementTree as ET
-import shutil
-import traci
-
-
 import traci
 import xml.etree.ElementTree as ET
 import pandas as pd
@@ -45,28 +36,41 @@ class SumoSimulation():
                     "--verbose","--seed", f"{rep}",
                     "--output-prefix", f"{self.output_dir}{epoch_index}_{rep}_"
                     ]
+        connection_started = False
+
         try:
-            traci.start(command)
+            traci.start(command, numRetries=600)
+            connection_started = True
             for tl in self.tl_ids:
                 traci.trafficlight.setProgram(tl, "1")
                 program = traci.trafficlight.getAllProgramLogics(tl)
                 program_used=traci.trafficlight.getProgram(tl)
 
             
-            traci.simulationStep(61200)
+            while (
+                traci.simulation.getMinExpectedNumber() > 0
+            ):
+                traci.simulationStep()
 
         except Exception as e:
             print(f"Erreur SUMO/TraCI : {e}")
             traceback.print_exc()
+            raise
 
         finally:
-            traci.close()
+            if connection_started:
+                try:
+                    traci.close()
+                    print("TraCI connection closed.", flush=True)
+                except Exception as e:
+                    print(f"Error while closing TraCI: {e}", flush=True)
+                    raise
 
         df_sim=pd.read_xml(f"./ingolstadt7/{self.output_dir}{epoch_index}_{rep}_InTAS7DIM.travel_times.xml",iterparse={"edge":["id","sampledSeconds","traveltime",\
                                                                                                                    "density","occupancy","speed","waitingTime",\
                                                                                                                     "timeLoss","departed","arrived","entered","left",\
                                                                                                                         "flow"]}).rename(columns={"id":"edge_id"})
         if df_sim.shape[0]!=len(df_sim["edge_id"].unique()):
-            raise ValueError('This code asssumes there is  a single sampling time interval in the edge travel time xml file. If an edge id appears multiple times it is because there are multiple sampling intervals')
+            raise ValueError('This code asssumes there is a single sampling time interval in the edge travel time xml file. If an edge id appears multiple times it is because there are multiple sampling intervals')
 
         df_sim.to_csv(f"{self.output_dir}{epoch_index}_{rep}_InTAS7DIM.travel_times.csv")

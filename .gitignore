@@ -68,6 +68,8 @@ ingolstadt7/initial_output/*
 logs/
 logs/*
 
+hp_logs/*
+hp_logs/
 
 *.travel_times.csv
 initial_output/*
