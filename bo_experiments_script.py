@@ -159,8 +159,8 @@ def run_bo(kernel_name,mean_name,id_init_sample,rs):
                     output_dir=output_dir,
                     bounds=x_bounds)
     
-    bo_loop.run_loop(kernel_name="linear_regression",
-                        mean_name="linear_regression",
+    bo_loop.run_loop(kernel_name=kernel_name,
+                        mean_name=mean_name,
                         annotation=annotation,
                         rs=rs,
                         num_replications=num_replications)
