@@ -1,0 +1,21 @@
+<configuration>
+  <input>
+    <net-file value="ingolstadt7.net.xml"/>
+    <route-files value="ingolstadt7_routes_with_edges.rou.xml"/>
+    <additional-files value="additional.xml"/>
+  </input>
+  <time>
+    <begin value="57600"/>
+  </time>
+         <output>
+                <tripinfo-output value="InTAS7DIM.tripinfo_out_sim.xml"/>
+                <summary-output value="InTAS7DIM.summary_out_sim.xml"/>
+                <edgedata-output value="InTAS7DIM.travel_times.xml"/>
+                <fcd-output value="InTAS7DIM.fcd_output.xml"/>  
+                <vehroute-output value="InTAS7DIM.vehroute.xml"/>
+                <vehroute-output.exit-times value="true"/>
+                <vehroute-output.write-unfinished value="true"/>         
+            </output>
+            <step-length value="1.0"/>
+
+</configuration>

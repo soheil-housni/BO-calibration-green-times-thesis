@@ -84,8 +84,10 @@ turbo_initial_output/*
 turbo_initial_output/
 turbo_initial_samples/*
 turbo_initial_samples/
-!additional_gt.xml
+!additional.gt_scenario.xml
 !additional.xml
+!ingolstadt7.net.xml
+!ingolstadt7.sumocfg
 !InTAS_gt.sumocfg
 !InTAS.sumocfg
 
