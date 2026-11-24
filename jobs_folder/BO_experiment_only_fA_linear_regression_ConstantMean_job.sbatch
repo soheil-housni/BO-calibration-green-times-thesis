@@ -27,4 +27,4 @@ echo "SUMO : $(which sumo)"
 sumo --version
 
 
-python -u bo_experiment_scripts.py --kernel_name "only_fA_linear_regression" --mean_name "ConstantMean" --experiment_id $SLURM_ARRAY_TASK_ID
+python -u bo_experiments_script.py --kernel_name "only_fA_linear_regression" --mean_name "ConstantMean" --experiment_id $SLURM_ARRAY_TASK_ID

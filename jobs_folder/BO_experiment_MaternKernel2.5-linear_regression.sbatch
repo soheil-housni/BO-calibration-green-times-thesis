@@ -27,4 +27,4 @@ echo "SUMO : $(which sumo)"
 sumo --version
 
 
-python -u bo_experiment_scripts.py --kernel_name "MaternKernel_default" --mean_name "linear_regression" --experiment_id $SLURM_ARRAY_TASK_ID
+python -u bo_experiments_script.py --kernel_name "MaternKernel_default" --mean_name "linear_regression" --experiment_id $SLURM_ARRAY_TASK_ID

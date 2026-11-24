@@ -48,9 +48,9 @@ class ExtractRoutesGreenTimes():
 
         route_green_time_constant=torch.tensor(self.routes_constant_values,dtype=self.dtype).unsqueeze(0)
 
-        route_green_time[...,self.routes_to_vary]=route_green_time[:,self.routes_to_vary]
-        route_green_time[...,self.routes_to_change_index]=route_green_time_change[:,self.routes_to_change_index]
-        route_green_time[...,self.routes_constant_index]=route_green_time_constant[:,self.routes_constant_index]
+        route_green_time[...,self.routes_to_vary]=route_green_time[...,self.routes_to_vary]
+        route_green_time[...,self.routes_to_change_index]=route_green_time_change[...,self.routes_to_change_index]
+        route_green_time[...,self.routes_constant_index]=route_green_time_constant[...,self.routes_constant_index]
 
         return route_green_time
 

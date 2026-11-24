@@ -180,8 +180,8 @@ class BOLoop():
             
             if mean_name is not None:
                 torch.save(hyperparams_dict,f"./hp_logs/hp_dict_{kernel_name}_{mean_name}_{annotation}_restart{rs}.pt")
-                df.to_csv(f'{self.output_dir}BO_df_{kernel_name}_{mean_name}_{annotation}_restart{rs}.csv', index=None)
+                df.to_csv(f'BO_final_output/BO_df_{kernel_name}_{mean_name}_{annotation}_restart{rs}.csv', index=None)
             else:
                 torch.save(hyperparams_dict,f"./hp_logs/hp_dict_{kernel_name}_{annotation}_restart{rs}.pt")
-                df.to_csv(f'{self.output_dir}BO_df_{kernel_name}_{annotation}_restart{rs}.csv', index=None)
+                df.to_csv(f'BO_final_output/BO_df_{kernel_name}_{annotation}_restart{rs}.csv', index=None)
                 

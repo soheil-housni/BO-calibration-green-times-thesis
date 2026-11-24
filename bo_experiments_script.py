@@ -1,4 +1,4 @@
-from modules.sumo import ErrorFunctionConnexionVersion,TLIncomingCorridors,CompleteCorridorsConnexions,ConnexionsGreenTime,connexions_routes_correspondance_matrix,update_green_time_dict,update_green_times,SumoSimulation
+from modules.sumo import ErrorFunctionRouteVersion,TLIncomingCorridors,update_green_times,SumoSimulation,create_initial_tl_df
 from modules.gp import UpdatedFAFunctionLinearRegresion,InitializeGPModel
 from modules.bo import InitialSamples,Optimization,BOLoop
 import pandas as pd
@@ -73,24 +73,16 @@ def run_bo(kernel_name,mean_name,id_init_sample,rs):
     x_dim=7
     output_dir = 'BO_outputs/'
 
-    df_gt=pd.read_csv("./gt_data/df_gt_InTAS7DIM.csv")
-
+    df_gt=pd.read_csv("gt_data/df_gt_InTAS7DIM.csv")
     df_gt["route"]=df_gt["route"].apply(lambda x : ast.literal_eval(x))
-    df_gt["green_phases"]=df_gt["green_phases"].apply(lambda x : ast.literal_eval(x))
-
+    df_gt=df_gt.sort_values(by="route_id")
 
     scaling_loss_factor=1
 
-    def get_tls():
-        green_phase_times_dict_tmp = update_green_time_dict(33*np.ones(x_dim))
-        tl_ids_set = []
-        for elem in green_phase_times_dict_tmp.keys():
-            if elem[0] not in tl_ids_set:
-                tl_ids_set.append(elem[0])
-        return tl_ids_set   
+    gt_additional_xml="ingolstadt7/additional.gt_scenario.xml"
+    initial_tl_df=create_initial_tl_df(gt_additional_xml)
 
-    tl_ids = get_tls()
-    print(tl_ids)
+    tl_ids = np.sort(initial_tl_df["tl"].unique())
 
 
     low_bound = 5
@@ -120,70 +112,18 @@ def run_bo(kernel_name,mean_name,id_init_sample,rs):
 
     dtype=torch.double
 
-    g_dict_to_vary={
-            "gneJ260":"GGGGGgrrr",
-            "gneJ210": "GGggrrrrrrGGGG",
-            "32564122": "GGGGGgrrr",
-            "gneJ207":"GGgGrGGG",
-            "gneJ143": "rrrGGGGgGGGg",
-            "cluster_1757124350_1757124352":"GGgrrGGG",
-            "cluster_306484187_cluster_1200363791_1200363826_1200363834_1200363898_1200363927_1200363938_1200363947_1200364074_1200364103_1507566554_1507566556_255882157_306484190":"GGGGGGrrrrrr"
-        }
-
-    g_dict_to_change={
-            "gneJ260":"GrrrrrGGG",
-            "gneJ210": "rrrrGGGGGGGGrr",
-            "32564122": "GrrrrrGGG",
-            "gneJ207":"rrrGGGrr",
-            "gneJ143": "GGGGrrrrrrrr",
-            "cluster_1757124350_1757124352":"rrrGGGrr",
-            "cluster_306484187_cluster_1200363791_1200363826_1200363834_1200363898_1200363927_1200363938_1200363947_1200364074_1200364103_1507566554_1507566556_255882157_306484190":"rrrrrrrrGGGG"
-        }
-
-    g_dict_const={
-        "gneJ260":["yyyyygrrr","rrrGGGrrr","rrryyyrrr","yrrrrryyy"],
-        "gneJ210": ["yyggrrrrrryyyy","GGGGrrrrrrrrrr","yyyyrrrrrrrrrr","rrrryyyyyyyyrr"],
-        "32564122": ["yyyyyyrrr","yrrrrryyy"],
-        "gneJ207":["yygyryyy","GGGrrrrr","yyyrrrrr","rrryyyrr"],
-        "gneJ143": ["rrryyyygyyyg","rrrrrrrGrrrG","rrrrrrryrrry","yyyyrrrrrrrr"],
-        "cluster_1757124350_1757124352":["yygrryyy","GGGrrrrr","yyyrrrrr","rrryyyrr"],
-        "cluster_306484187_cluster_1200363791_1200363826_1200363834_1200363898_1200363927_1200363938_1200363947_1200364074_1200364103_1507566554_1507566556_255882157_306484190":["rrrrrrrrGGyy","rrrrrrGGGGrr","rrrrGGGGGGrr","rrrrGGyyyyrr","yyyyyyrrrrrr"]
-    }
 
 
-    complete_corridors_connexions_generator=CompleteCorridorsConnexions(route_xml,net_xml,corridors_df)
+    error_function=ErrorFunctionRouteVersion(initial_tl_df=initial_tl_df,
+                                                 df_gt=df_gt,
+                                                 sumo_simulator=sumo_simulator,
+                                                 corridors_df=corridors_df,
+                                                 additional_xml=additional_xml,
+                                                 output_dir=output_dir,
+                                                 tl_ids=tl_ids)
+    
 
-    complete_corridors_connexions_df=complete_corridors_connexions_generator.create_connexion_corridors_df()
-
-
-
-    error_function=ErrorFunctionConnexionVersion(scaling_factor_loss_fn=scaling_loss_factor,
-                                            df_gt=df_gt,
-                                            sumo_simulator=sumo_simulator,
-                                            complete_corridors_connexions_df=complete_corridors_connexions_df,
-                                            additional_xml=additional_xml,
-                                            output_dir=output_dir,
-                                            tl_ids=tl_ids)
-
-
-
-
-    connexions_green_time_extractor=ConnexionsGreenTime(
-        tl_ids=tl_ids,
-        complete_corridors_connexions_df=df_gt,
-        net_xml=net_xml,
-        g_dict_to_change=g_dict_to_change,
-        g_dict_to_vary=g_dict_to_vary,
-        g_dict_const=g_dict_const,
-        dtype=dtype
-    )
-
-    fA_function=UpdatedFAFunctionLinearRegresion(
-        df_gt=df_gt,
-        connexions_green_time_extractor=connexions_green_time_extractor,
-        dtype=dtype,
-    )
-
+    fA_function=UpdatedFAFunctionLinearRegresion(df_gt=df_gt,initial_tl_df=initial_tl_df,net_file=net_xml)
 
     gp_initializer=InitializeGPModel(
         fa_function=fA_function,
