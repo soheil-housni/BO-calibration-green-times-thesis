@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from .old_green_time_functions import update_green_times
+from .green_time_functions import update_green_times
 import shutil
 from .vehroute_df_preprocessing import create_vehroute_df
 from .extract_route_average_traveltime import get_route_average_traveltime
@@ -28,7 +28,7 @@ def run_single_rep_error(rep,
         )
        sumo_simulator.simulation(epoch_index=epoch_index, rep=rep,demand_scaling_factor=demand_scaling_factor)
 
-       vehroute_df=create_vehroute_df(f"Ingolstadt Network/{output_dir}{epoch_index}_{rep}_InTAS.vehroute.xml")
+       vehroute_df=create_vehroute_df(f"ingolstadt7/{output_dir}{epoch_index}_{rep}_InTAS7DIM.vehroute.xml")
 
        corridors_df_sim=corridors_df.copy()
 
@@ -75,7 +75,7 @@ class ErrorFunctionRouteVersion():
                       demand_scaling_factor=None,
                       num_workers=5):
 
-        update_green_times(g_vec,self.additional_xml,self.tl_ids,self.initial_tl_df)
+        update_green_times(g_vec=g_vec,additional_xml=self.additional_xml,tl_ids_set=self.tl_ids,initial_tl_df=self.initial_tl_df)
         shutil.copy(self.additional_xml, f'{self.output_dir}{epoch_index}_copy_additional.xml')
 
         args_list = [

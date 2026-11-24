@@ -1,45 +1,56 @@
 import numpy as np
 import sumolib
 import pandas as pd
-from modules.sumo import update_green_time_dict
 import torch
+from modules.sumo import ExtractRoutesGreenTimes
 
 
 class UpdatedFAFunctionLinearRegresion():
     def __init__(self,
                  df_gt,
-                 connexions_green_time_extractor,
-                 dtype,
+                 initial_tl_df,
+                 net_file,
+                 dtype=torch.double,
                  cycle_time=90,
                  scaling_loss_factor=1):
 
         self.cycle_time=cycle_time
         self.scaling_loss_factor=scaling_loss_factor
-        self.connexions_green_time_extractor=connexions_green_time_extractor
         self.dtype=dtype
 
-        self.df_gt=df_gt.sort_values(by="connexion_id")
+        self.df_gt=df_gt.sort_values(by="route_id")
+
+        self.df_gt["route_weight"]=self.df_gt["route_weight"]/self.df_gt["route_weight"].sum()
 
 
-        self.index_to_vary,self.index_to_change,self.index_const,self.n_phases,self.tensor_matrix,all_connexion_phases_df=self.connexions_green_time_extractor.fix_data_preparation()
+
+        self.initial_tl_df=initial_tl_df
+        self.net_file=net_file
+        self.routes_green_time_extractor=ExtractRoutesGreenTimes(df_gt=self.df_gt,
+                                                        net_file=self.net_file,
+                                                        initial_tl_df=self.initial_tl_df)
+        
+
+
 
 
     def fA(self, x_init):
-            self.connexion_route_traveltimes_true_values=torch.tensor(self.df_gt["route_connexion_average_traveltime"].values,dtype=self.dtype).reshape(*([1]*(x_init.ndim-1)),-1)
+            self.route_traveltimes_true_values=torch.tensor(self.df_gt["route_average_traveltime"].values,dtype=self.dtype).reshape(*([1]*(x_init.ndim-1)),-1)
+            self.route_weights=torch.tensor(self.df_gt["route_weight"].values,dtype=self.dtype).reshape(*([1]*(x_init.ndim-1)),-1)
             predictors=self.predictors_generation(x_init)
-            predicted_connexion_route_traveltime_values=self.extract_connexion_route_traveltime(x_init,predictors)
-            route_mse=torch.square((predicted_connexion_route_traveltime_values/self.scaling_loss_factor)-(self.connexion_route_traveltimes_true_values/self.scaling_loss_factor)).mean(dim=-1,keepdim=True)
+            predicted_route_traveltime_values=self.extract_route_traveltime(x_init,predictors)
+            route_mse=torch.square((predicted_route_traveltime_values/self.scaling_loss_factor)-(self.route_traveltimes_true_values/self.scaling_loss_factor)).sum(dim=-1,keepdim=True)
             return route_mse
 
     def fA_traveltime(self, x_init):
          predictors=self.predictors_generation(x_init)
-         predicted_connexion_traveltime_values=self.extract_connexion_route_traveltime(x_init,predictors)
-         return predicted_connexion_traveltime_values
+         predicted_route_traveltime_values=self.extract_route_traveltime(x_init,predictors)
+         return predicted_route_traveltime_values
 
-    def extract_connexion_route_traveltime(self,x_init,predictors):
-        predicted_connexion_delay_factor_values=self.linear_regression_model(predictors)
-        predicted_connexion_traveltime_values=predicted_connexion_delay_factor_values*self.route_ff_tt
-        return predicted_connexion_traveltime_values
+    def extract_route_traveltime(self,x_init,predictors):
+        predicted_route_delay_factor_values=self.linear_regression_model(predictors)
+        predicted_route_traveltime_values=predicted_route_delay_factor_values*self.route_ff_tt
+        return predicted_route_traveltime_values
         
 
     def linear_regression_model(self,predictors):
@@ -64,12 +75,7 @@ class UpdatedFAFunctionLinearRegresion():
         self.route_average_ff_speed=torch.tensor(self.df_gt["route_ff_speed"].values,dtype=self.dtype).reshape(*([1]*(x_init.ndim-1)),-1)
 
 
-        routes_green_duration_vector=self.connexions_green_time_extractor.extraction_connexions_green_time(x_init,
-                                                                                                    self.index_to_vary,
-                                                                                                    self.index_to_change,
-                                                                                                    self.index_const,
-                                                                                                    self.n_phases,
-                                                                                                    self.tensor_matrix)
+        routes_green_duration_vector=self.routes_green_time_extractor.get_routes_green_times(x_init=x_init)
 
         proport_ff_tt=(routes_green_duration_vector/self.cycle_time)*self.route_ff_tt
         inverse_proport_ff_tt=1/proport_ff_tt

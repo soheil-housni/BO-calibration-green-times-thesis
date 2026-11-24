@@ -3,7 +3,6 @@ import torch
 from botorch.sampling.stochastic_samplers import StochasticSampler
 from botorch.utils.transforms import unnormalize,normalize
 from botorch import fit_gpytorch_mll
-from modules.sumo import ErrorFunctionConnexionVersion
 from modules.sumo import check_feasibility
 from botorch.acquisition import qLogExpectedImprovement,LogExpectedImprovement
 from torch.quasirandom import SobolEngine

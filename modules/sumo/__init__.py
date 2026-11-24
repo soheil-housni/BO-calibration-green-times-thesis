@@ -5,7 +5,7 @@ from .objective_functions import ErrorFunctionRouteVersion
 from .extract_demand import extract_route_demand
 from .feasibility_check import check_feasibility
 from .freeflow_eta import get_freeflow_eta
-from .green_times_function import update_green_times,update_green_time_df
+from .green_time_functions import update_green_times,update_green_time_df
 from .incoming_corridors import TLIncomingCorridors
 from .sumo_simulation import SumoSimulation
 from .creation_agg_dataset import create_agg_dataset

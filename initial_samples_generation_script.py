@@ -1,7 +1,7 @@
 import torch
 import pandas as pd
 import numpy as np
-from modules.sumo import ErrorFunctionConnexionVersion,TLIncomingCorridors,CompleteCorridorsConnexions,ConnexionsGreenTime,connexions_routes_correspondance_matrix,update_green_time_dict,update_green_times,SumoSimulation
+from modules.sumo import ErrorFunctionRouteVersion,TLIncomingCorridors,update_green_times,SumoSimulation,create_initial_tl_df
 from modules.bo import InitialSamples
 import ast
 import argparse
@@ -77,21 +77,14 @@ def generate_initial_samples(id_init_sample):
 
     num_replications = 5
 
-    def get_tls():
-        green_phase_times_dict_tmp = update_green_time_dict(33*np.ones(x_dim))
-        tl_ids_set = []
-        for elem in green_phase_times_dict_tmp.keys():
-            if elem[0] not in tl_ids_set:
-                tl_ids_set.append(elem[0])
-        return tl_ids_set   
+    gt_additional_xml="ingolstadt7/additional.gt_scenario.xml"
+    initial_tl_df=create_initial_tl_df(gt_additional_xml)
 
-    tl_ids = get_tls()
-    print(tl_ids)
+    tl_ids = np.sort(initial_tl_df["tl"].unique())
 
-    df_gt = pd.read_csv(f'./gt_data/df_gt_InTAS7DIM.csv')
+    df_gt=pd.read_csv("gt_data/df_gt_InTAS7DIM.csv")
     df_gt["route"]=df_gt["route"].apply(lambda x : ast.literal_eval(x))
-    df_gt["green_phases"]=df_gt["green_phases"].apply(lambda x : ast.literal_eval(x))
-    print(f'Number of GT connexions: {df_gt.shape[0]}')
+    df_gt=df_gt.sort_values(by="route_id")
 
 
     low_bound = 5
@@ -118,18 +111,13 @@ def generate_initial_samples(id_init_sample):
     dtype=torch.double
 
 
-    complete_corridors_connexions_generator=CompleteCorridorsConnexions(route_xml,net_xml,corridors_df)
-
-    complete_corridors_connexions_df=complete_corridors_connexions_generator.create_connexion_corridors_df()
-
-
-    error_function=ErrorFunctionConnexionVersion(scaling_factor_loss_fn=scaling_loss_factor,
-                                            df_gt=df_gt,
-                                            sumo_simulator=sumo_simulator,
-                                            complete_corridors_connexions_df=complete_corridors_connexions_df,
-                                            additional_xml=additional_xml,
-                                            output_dir=init_output_dir,
-                                            tl_ids=tl_ids)
+    error_function=ErrorFunctionRouteVersion(initial_tl_df=initial_tl_df,
+                                             df_gt=df_gt,
+                                             sumo_simulator=sumo_simulator,
+                                             corridors_df=corridors_df,
+                                             additional_xml=additional_xml,
+                                             output_dir=init_output_dir,
+                                             tl_ids=tl_ids)
 
     initial_sampler=InitialSamples(
         objective_function=error_function,

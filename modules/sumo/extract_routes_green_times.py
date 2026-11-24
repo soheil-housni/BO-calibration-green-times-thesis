@@ -24,9 +24,9 @@ class ExtractRoutesGreenTimes():
 
         self.tl_ids=np.sort(initial_tl_df["tl"].unique())
 
-        self.routes_to_vary=self.df_gt[self.df_gt["to_change"]==1].index
-        self.routes_to_change_index=self.df_gt[self.df_gt["to_change"]==2].index
-        self.routes_constant_index=self.df_gt[self.df_gt["to_change"]==0].index
+        self.routes_to_vary=self.df_gt[self.df_gt["main_green_phase_to_change"]==1].index
+        self.routes_to_change_index=self.df_gt[self.df_gt["main_green_phase_to_change"]==2].index
+        self.routes_constant_index=self.df_gt[self.df_gt["main_green_phase_to_change"]==0].index
 
         self.routes_constant_values=self.df_gt["main_green_phase_initial_duration"].values
         self.route_tl_cumulative_constant_values=self.df_gt["tl_cumulative_constant_duration"].values

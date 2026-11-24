@@ -5,7 +5,6 @@ import numpy as np
 from modules.sumo import check_feasibility
 import torch
 import pandas as pd
-from modules.sumo import old_objective_functions_2
 
 
 
