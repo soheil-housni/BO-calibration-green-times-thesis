@@ -65,6 +65,10 @@ ingolstadt7/turbo_1_tr_output/*
 ingolstadt7/initial_output/
 ingolstadt7/initial_output/*
 
+BO_final_output/*
+BO_final_output/
+
+
 logs/
 logs/*
 

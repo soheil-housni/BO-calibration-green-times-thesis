@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=generate_gt_dataset
-#SBATCH --time=04:00:00
+#SBATCH --time=10:00:00
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=6
 #SBATCH --output=logs/%x-%j.out
