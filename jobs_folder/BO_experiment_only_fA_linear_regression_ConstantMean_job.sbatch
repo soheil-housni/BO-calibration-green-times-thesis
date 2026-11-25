@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=MaternKernel2.5-ConstantMean
+#SBATCH --job-name=OnlyFALinearRegression-ConstantMean
 #SBATCH --time=10:00:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=4

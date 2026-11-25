@@ -41,10 +41,10 @@ class InitializeGPModel():
             covar_module = ScaleKernel( MaternKernel(nu=self.nu) ) 
 
         elif kernel_name == "linear_regression":
-            covar_module=ScaleKernel(Linear_Regression(bounds=self.bounds,fA_function=self.fa_function,dtype=self.dtype,rbf=self.rbf,nu=self.nu))
+            covar_module=ScaleKernel(Linear_Regression(bounds=self.bounds,fA_function=self.fa_function,dtype=self.dtype,rbf=self.rbf,nu=self.nu,Y_train_mean=Y_train_mean,Y_train_std=Y_train_std))
             
         elif kernel_name=="only_fA_linear_regression":
-            covar_module=ScaleKernel(Only_fA_Linear_Regression(bounds=self.bounds,fA_function=self.fa_function,dtype=self.dtype,rbf=self.rbf,nu=self.nu))
+            covar_module=ScaleKernel(Only_fA_Linear_Regression(bounds=self.bounds,fA_function=self.fa_function,dtype=self.dtype,rbf=self.rbf,nu=self.nu,Y_train_mean=Y_train_mean,Y_train_std=Y_train_std))
         else:
             raise TypeError('Error non-defined kernel choice')
 
